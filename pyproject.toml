@@ -13,6 +13,9 @@ fastapi = "^0.75.1"
 uvicorn = {extras = ["standard"], version = "^0.17.6"}
 aiohttp = "^3.8.1"
 pytest-asyncio = "^0.18.3"
+SQLAlchemy = "^1.4.35"
+alembic = "^1.7.7"
+databases = {extras = ["postgresql"], version = "^0.5.5"}
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.1.1"

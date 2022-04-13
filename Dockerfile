@@ -14,6 +14,10 @@ ENV YOUR_ENV=${YOUR_ENV} \
   PIP_DEFAULT_TIMEOUT=100 \
   POETRY_VERSION=1.1.13
 
+RUN apt-get update \
+  && apt-get -y install netcat gcc postgresql \
+  && apt-get clean
+
 # System deps:
 RUN pip install "poetry==$POETRY_VERSION"
 
@@ -23,9 +27,11 @@ COPY poetry.lock pyproject.toml /app/
 
 # Copy environment information
 COPY ./local-env ./.env
+COPY ./alembic.ini ./alembic.ini
 
 # Creating folders, and files for a project:
 COPY ./app /app/app
+COPY ./alembic /app/alembic
 
 # Project initialization:
 RUN poetry config virtualenvs.create false \
