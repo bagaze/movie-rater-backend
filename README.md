@@ -1,5 +1,5 @@
 # movie-rater-backend
-An API application allowing to retrieve film information (thanks to [TMDB](https://www.themoviedb.org/)) and establish your own rating
+An API application allowing to retrieve film information (thanks to [The Movie DB](https://www.themoviedb.org/)) and establish your own rating
 
 Built using [Python FastAPI](https://fastapi.tiangolo.com)
 
@@ -16,6 +16,10 @@ Create your configuration file based on the sample:
 Build the docker image
 
 `docker build -t baptistegaze/movie-rater-back-img .`
+
+Run the database migration using alembic
+
+`alembic upgrade head`
 
 ## Run
 
