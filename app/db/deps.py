@@ -10,7 +10,7 @@ class DBSession:
     db_session = Database(settings.DATABASE_URL, min_size=2, max_size=10)
 
     async def start(self):
-        logger.warn(f"--- Connecting to {settings.DATABASE_URL} ---")
+        logger.info(f"--- Connecting to {settings.DATABASE_URL} ---")
         try:
             await self.db_session.connect()
         except Exception as e:

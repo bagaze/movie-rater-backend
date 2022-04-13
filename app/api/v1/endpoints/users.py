@@ -12,6 +12,13 @@ router = APIRouter()
 
 @router.post(
     "/",
+    include_in_schema=False,
+    response_model=UserPublic,
+    status_code=HTTP_201_CREATED
+)
+@router.post(
+    "",
+    include_in_schema=True,
     response_model=UserPublic,
     status_code=HTTP_201_CREATED
 )
@@ -27,6 +34,12 @@ async def post_user(
 
 @router.get(
     "/",
+    include_in_schema=False,
+    response_model=list[UserPublic],
+)
+@router.get(
+    "",
+    include_in_schema=True,
     response_model=list[UserPublic],
 )
 async def get_users(
