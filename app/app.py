@@ -18,8 +18,8 @@ def get_application():
         allow_headers=["*"],
     )
 
-    app.add_event_handler("startup", deps.create_start_app_handler(app))
-    app.add_event_handler("shutdown", deps.create_stop_app_handler(app))
+    app.add_event_handler("startup", deps.create_start_app_handler())
+    app.add_event_handler("shutdown", deps.create_stop_app_handler())
 
     app.include_router(api_router, prefix=settings.API_V1_STR)
 

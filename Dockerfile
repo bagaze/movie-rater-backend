@@ -1,4 +1,4 @@
-FROM python:3.10-slim
+FROM python:3.10-alpine
 
 EXPOSE 9090
 
@@ -14,9 +14,8 @@ ENV YOUR_ENV=${YOUR_ENV} \
   PIP_DEFAULT_TIMEOUT=100 \
   POETRY_VERSION=1.1.13
 
-RUN apt-get update \
-  && apt-get -y install netcat gcc postgresql \
-  && apt-get clean
+RUN apk update \
+  && apk add --no-cache build-base g++ postgresql postgresql-dev libc-dev linux-headers libffi-dev
 
 # System deps:
 RUN pip install "poetry==$POETRY_VERSION"

@@ -10,6 +10,7 @@ services:
         YOUR_ENV: development
     volumes:
       - ./app/:/app/app
+      - ./alembic/:/app/alembic
     command: uvicorn app.main:app --reload --workers 1 --host 0.0.0.0 --port 9090
     ports:
       - 9090:9090
