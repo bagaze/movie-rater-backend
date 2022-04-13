@@ -30,9 +30,10 @@ async def post_user(
     response_model=list[UserPublic],
 )
 async def get_users(
+    page: int = 1,
     db_session: Database = Depends(db_session)
 ) -> UserPublic:
     user_crud = UserCrud(db_session)
-    created_users = await user_crud.get_users()
+    created_users = await user_crud.get_users(page)
 
     return created_users

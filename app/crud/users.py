@@ -7,7 +7,8 @@ from .core import BaseCrud
 GET_USERS_QUERY = """
     SELECT id, username, email, password, salt,
         is_active, is_superuser, created_at, updated_at
-    FROM users;
+    FROM users
+    LIMIT :limit OFFSET :offset;
 """
 
 GET_USER_BY_EMAIL_QUERY = """
@@ -34,9 +35,14 @@ REGISTER_NEW_USER_QUERY = """
 
 class UserCrud(BaseCrud):
 
-    async def get_users(self) -> UserInDB:
+    async def get_users(self, page: int = 1) -> UserInDB:
+        (limit, offset) = self._get_limit_offset_from_page(page)
         user_records = await self.db.fetch_all(
-            query=GET_USERS_QUERY
+            query=GET_USERS_QUERY,
+            values={
+                "limit": limit,
+                "offset": offset
+            }
         )
 
         if not user_records:
