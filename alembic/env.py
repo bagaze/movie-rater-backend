@@ -1,7 +1,7 @@
 from logging.config import fileConfig
-
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
+import os
+from sqlalchemy import engine_from_config, create_engine, pool
+from psycopg2 import DatabaseError
 
 from alembic import context
 
@@ -15,11 +15,6 @@ config = context.config
 # This line sets up loggers basically.
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
-
-# Update
-# Overwrite the ini-file sqlalchemy.url path
-if not config.get_main_option('sqlalchemy.url'):
-    config.set_main_option('sqlalchemy.url', settings.DATABASE_URL)
 
 # add your model's MetaData object here
 # for 'autogenerate' support
@@ -45,6 +40,9 @@ def run_migrations_offline():
     script output.
 
     """
+    if os.environ.get("TESTING"):
+        raise DatabaseError("Running testing migrations offline currently not permitted.")
+
     url = config.get_main_option("sqlalchemy.url")
     context.configure(
         url=url,
@@ -64,6 +62,22 @@ def run_migrations_online():
     and associate a connection with the context.
 
     """
+    DB_URL = ""
+    if os.environ.get("TESTING"):
+        DB_URL = f'{settings.DATABASE_URL}_test'
+    else:
+        DB_URL = f'{settings.DATABASE_URL}'
+
+    if os.environ.get("TESTING"):
+        # connect to primary db
+        default_engine = create_engine(str(settings.DATABASE_URL), isolation_level="AUTOCOMMIT")
+        # drop testing db if it exists and create a fresh one
+        with default_engine.connect() as default_conn:
+            default_conn.execute(f"DROP DATABASE IF EXISTS {settings.POSTGRES_DB}_test")
+            default_conn.execute(f"CREATE DATABASE {settings.POSTGRES_DB}_test")
+
+    config.set_main_option('sqlalchemy.url', DB_URL)
+
     connectable = engine_from_config(
         config.get_section(config.config_ini_section),
         prefix="sqlalchemy.",

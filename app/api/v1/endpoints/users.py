@@ -15,12 +15,14 @@ router = APIRouter()
 
 @router.post(
     "/",
+    name="users:post-user",
     include_in_schema=False,
     response_model=UserPublic,
     status_code=HTTP_201_CREATED
 )
 @router.post(
     "",
+    name="users:post-user",
     include_in_schema=True,
     response_model=UserPublic,
     status_code=HTTP_201_CREATED
@@ -37,11 +39,13 @@ async def post_user(
 
 @router.get(
     "/",
+    name="users:get-users",
     include_in_schema=False,
     response_model=UserResult,
 )
 @router.get(
     "",
+    name="users:get-users",
     include_in_schema=True,
     response_model=UserResult,
 )
@@ -58,6 +62,7 @@ async def get_users(
 
 @router.get(
     "/me",
+    name="users:get-user-me",
     include_in_schema=True,
     response_model=UserPublic,
 )

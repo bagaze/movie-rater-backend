@@ -15,7 +15,7 @@ ENV YOUR_ENV=${YOUR_ENV} \
   POETRY_VERSION=1.1.13
 
 RUN apk update \
-  && apk add --no-cache build-base g++ postgresql postgresql-dev libc-dev linux-headers libffi-dev
+  && apk add --no-cache build-base g++ postgresql postgresql-dev libc-dev linux-headers libffi-dev vim
 
 # System deps:
 RUN pip install "poetry==$POETRY_VERSION"
@@ -27,6 +27,7 @@ COPY poetry.lock pyproject.toml /app/
 # Copy environment information
 COPY ./local-env ./.env
 COPY ./alembic.ini ./alembic.ini
+COPY ./pytest.ini ./pytest.ini
 
 # Creating folders, and files for a project:
 COPY ./app /app/app

@@ -23,7 +23,10 @@ PyJWT = "^2.3.0"
 python-multipart = "^0.0.5"
 
 [tool.poetry.dev-dependencies]
+requests = "^2.27.1"
 pytest = "^7.1.1"
+pytest-asyncio = "^0.18.3"
+asgi-lifespan = "^1.0.1"
 black = {version = "*", allow-prereleases = true}
 flake8 = "*"
 
