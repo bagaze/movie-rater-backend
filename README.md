@@ -29,6 +29,12 @@ You can access:
 - [OpenAPI documentation](http://localhost:9090/docs)
 - [Redoc](http://localhost:9090/redoc)
 
+## Create a super admin
+
+Run the following command in your deployed environment
+
+`poetry run create_admin email username password`
+
 ## API Endpoints
 
 Once the application is running, the API is available at [http://localhost:9090](http://localhost:9090)

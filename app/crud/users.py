@@ -32,8 +32,8 @@ GET_USER_BY_USERNAME_QUERY = """
 """
 
 CREATE_NEW_USER_QUERY = """
-    INSERT INTO users (username, email, password, salt)
-    VALUES (:username, :email, :password, :salt)
+    INSERT INTO users (username, email, password, salt, is_superuser)
+    VALUES (:username, :email, :password, :salt, :is_superuser)
     RETURNING id, username, email, password, salt,
         is_active, is_superuser, created_at, updated_at;
 """
@@ -82,7 +82,12 @@ class UserCrud(BaseCrud):
 
         return UserInDB(**user_record)
 
-    async def create_new_user(self, *, new_user: UserCreate) -> UserInDB:
+    async def _prepare_new_user(
+        self,
+        *,
+        new_user: UserCreate
+    ) -> UserCreate:
+
         # make sure email isn't already taken
         if await self.get_user_by_email(email=new_user.email):
             detail = "That email is already taken. " \
@@ -104,9 +109,22 @@ class UserCrud(BaseCrud):
             plaintext_password=new_user.password
         )
         new_user_params = new_user.copy(update=user_password_update.dict())
+
+        return new_user_params
+
+    async def create_new_user(
+        self,
+        *,
+        new_user: UserCreate,
+        is_superuser: bool = False
+    ) -> UserInDB:
+        new_user_params = await self._prepare_new_user(new_user=new_user)
         created_user = await self.db.fetch_one(
             query=CREATE_NEW_USER_QUERY,
-            values={**new_user_params.dict()}
+            values={
+                **new_user_params.dict(),
+                'is_superuser': is_superuser
+            }
         )
 
         return UserInDB(**created_user)
