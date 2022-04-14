@@ -3,7 +3,6 @@ import bcrypt
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from fastapi import HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
 from pydantic import ValidationError
 
 from app.schemas.user import UserPasswordUpdate, UserInDB
@@ -11,8 +10,6 @@ from app.schemas.token import JWTMeta, JWTCreds, JWTPayload
 from app.core.config import settings
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/tokens")
 
 
 class AuthService:

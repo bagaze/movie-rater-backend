@@ -3,10 +3,10 @@ from fastapi import Depends, APIRouter
 from starlette.status import HTTP_201_CREATED
 import logging
 
-from app.schemas.user import UserCreate, UserPublic
+from app.schemas.user import UserCreate, UserInDB, UserPublic
 from app.crud.users import UserCrud
 from app.db.deps import db_session
-from app.services.authentication import oauth2_scheme
+from app.api.dependencies import auth
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +47,8 @@ async def post_user(
 )
 async def get_users(
     page: int = 1,
-    db_session: Database = Depends(db_session)
+    db_session: Database = Depends(db_session),
+    _: UserInDB = Depends(auth.get_current_active_admin_user)
 ) -> list[UserPublic]:
     user_crud = UserCrud(db_session)
     created_users = await user_crud.get_users(page)
@@ -61,14 +62,6 @@ async def get_users(
     response_model=UserPublic,
 )
 async def get_user_me(
-    token: str = Depends(oauth2_scheme),
-    db_session: Database = Depends(db_session)
+    current_user: UserInDB = Depends(auth.get_current_active_user)
 ) -> UserPublic:
-    user_crud = UserCrud(db_session)
-    logger.debug(f'token is: {token}')
-    username = user_crud.auth_service.get_username_from_token(token=token)
-    logger.debug(f'username is: {username}')
-    user = await user_crud.get_user_by_username(username=username)
-    logger.debug(f'user is: {user}')
-
-    return user
+    return current_user
