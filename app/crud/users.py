@@ -3,12 +3,18 @@ from databases import Database
 from pydantic import EmailStr
 from fastapi import HTTPException, status
 import logging
+import math
 
 from app.schemas.user import UserCreate, UserInDB
 from .core import BaseCrud
 from app.services import auth_service
 
 logger = logging.getLogger(__name__)
+
+COUNT_USERS_QUERY = """
+    SELECT COUNT(*)
+    FROM users;
+"""
 
 GET_USERS_QUERY = """
     SELECT id, username, email, password, salt,
@@ -58,7 +64,20 @@ class UserCrud(BaseCrud):
         if not user_records:
             return []
 
-        return [UserInDB(**user_record) for user_record in user_records]
+        total_results = await self.db.fetch_val(
+            query=COUNT_USERS_QUERY
+        )
+        total_pages = math.ceil(total_results / self.PAGE_SIZE)
+
+        results = {
+            'page': page,
+            'total_results': total_results,
+            'total_pages': total_pages,
+            'results': [UserInDB(**user_record)
+                        for user_record in user_records]
+        }
+
+        return results
 
     async def get_user_by_email(self, *, email: EmailStr) -> UserInDB:
         user_record = await self.db.fetch_one(

@@ -3,7 +3,7 @@ from fastapi import Depends, APIRouter
 from starlette.status import HTTP_201_CREATED
 import logging
 
-from app.schemas.user import UserCreate, UserInDB, UserPublic
+from app.schemas.user import UserCreate, UserInDB, UserPublic, UserResult
 from app.crud.users import UserCrud
 from app.db.deps import db_session
 from app.api.dependencies import auth
@@ -38,18 +38,18 @@ async def post_user(
 @router.get(
     "/",
     include_in_schema=False,
-    response_model=list[UserPublic],
+    response_model=UserResult,
 )
 @router.get(
     "",
     include_in_schema=True,
-    response_model=list[UserPublic],
+    response_model=UserResult,
 )
 async def get_users(
     page: int = 1,
     db_session: Database = Depends(db_session),
     _: UserInDB = Depends(auth.get_current_active_admin_user)
-) -> list[UserPublic]:
+) -> UserResult:
     user_crud = UserCrud(db_session)
     created_users = await user_crud.get_users(page)
 

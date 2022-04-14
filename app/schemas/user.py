@@ -1,6 +1,7 @@
 from typing import Optional
 from pydantic import EmailStr, constr
 
+from .core import ListResult
 from app.schemas.core import DateTimeModelMixin, IDModelMixin, CoreModel
 
 
@@ -49,3 +50,7 @@ class UserInDB(IDModelMixin, DateTimeModelMixin, UserBase):
 
 class UserPublic(IDModelMixin, DateTimeModelMixin, UserBase):
     pass
+
+
+class UserResult(ListResult):
+    results: list[UserPublic]
