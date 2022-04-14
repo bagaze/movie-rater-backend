@@ -1,10 +1,14 @@
+from typing import Optional
 from databases import Database
 from pydantic import EmailStr
 from fastapi import HTTPException, status
+import logging
 
 from app.schemas.user import UserCreate, UserInDB
 from .core import BaseCrud
 from app.services import auth_service
+
+logger = logging.getLogger(__name__)
 
 GET_USERS_QUERY = """
     SELECT id, username, email, password, salt,
@@ -106,3 +110,22 @@ class UserCrud(BaseCrud):
         )
 
         return UserInDB(**created_user)
+
+    async def authenticate_user(
+        self,
+        *,
+        email: EmailStr,
+        password: str
+    ) -> Optional[UserInDB]:
+        user = await self.get_user_by_email(email=email)
+        logger.debug(f'get_user_by_email: user is {user}')
+        if not user:
+            return None
+        if not self.auth_service.verify_password(
+            password=password,
+            salt=user.salt,
+            hashed_pw=user.password,
+        ):
+            return None
+
+        return user

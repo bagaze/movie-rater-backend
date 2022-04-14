@@ -10,7 +10,10 @@ class Settings(BaseSettings):
     TMDP_API_V3: str = '/3'
     TMDB_API_KEY: str
 
-    CHANGE_ME: str = 'CHANGEME'
+    SECRET_KEY: str = 'CHANGEME'
+    ACCESS_TOKEN_EXPIRE_MINUTES: int
+    JWT_ALGORITHM: str
+    JWT_AUDIENCE: str
 
     POSTGRES_USER: str = 'postgres'
     POSTGRES_PASSWORD: str = 'postgres'
