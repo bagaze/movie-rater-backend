@@ -1,5 +1,4 @@
 from datetime import date
-from typing import Any
 from fastapi import APIRouter, Depends
 import aiohttp
 
@@ -10,15 +9,25 @@ from app.schemas import movie
 router = APIRouter()
 
 
-@router.get('/', include_in_schema=False, response_model=movie.MovieResult)
-@router.get('', include_in_schema=True, response_model=movie.MovieResult)
+@router.get(
+    '/',
+    name="weekly-movies:get-weekly-movies",
+    include_in_schema=False,
+    response_model=movie.MovieResult
+)
+@router.get(
+    '',
+    name="weekly-movies:get-weekly-movies",
+    include_in_schema=True,
+    response_model=movie.MovieResult
+)
 async def get_weekly_movies(
     *,
     release_date_gte: date,
     release_date_lte: date,
     page: int | None = 1,
     client_session: aiohttp.ClientSession = Depends(client_session)
-) -> Any:
+) -> movie.MovieResult:
     (_, res) = await tmdb_api.fetch_tmdb_api(
         endpoint='/discover/movie',
         client_session=client_session,

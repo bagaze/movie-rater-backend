@@ -16,12 +16,14 @@ router = APIRouter()
 
 @router.post(
     "/",
+    name="tokens:post-token",
     include_in_schema=False,
     response_model=AccessToken,
     status_code=HTTP_201_CREATED
 )
 @router.post(
     "",
+    name="tokens:post-token",
     include_in_schema=True,
     response_model=AccessToken,
     status_code=HTTP_201_CREATED
