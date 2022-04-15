@@ -31,10 +31,14 @@ def app() -> FastAPI:
 
 
 # Grab a reference to our database when needed
-@pytest.fixture(scope="module")
-def db_session() -> Database:
-    from app.db.deps import db_session
-    return db_session
+@pytest.fixture
+@pytest.mark.asyncio
+async def db() -> Database:
+    from app.db.deps import DBSession
+    db_session = DBSession()
+    await db_session.start()
+    yield db_session()
+    await db_session.stop()
 
 
 # Make requests in our tests
