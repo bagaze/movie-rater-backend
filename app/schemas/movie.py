@@ -1,11 +1,10 @@
 from datetime import date
-from pydantic import BaseModel, constr, root_validator, validator, Extra
+from pydantic import constr, root_validator, validator, Extra
 
-from app.schemas.core import ListResult
+from app.schemas.core import CoreModel, IDModelMixin, ListResult
 
 
-class Movie(BaseModel):
-    id: int
+class MovieBase(CoreModel):
     original_title: str
     title: str
     vote_average: float
@@ -19,7 +18,11 @@ class Movie(BaseModel):
         return v
 
 
-class MovieDetail(Movie):
+class MoviePublic(IDModelMixin, MovieBase):
+    pass
+
+
+class MovieDetailPublic(MoviePublic):
     imdb_id: constr(
         regex='^tt[0-9]{7}',  # noqa: F722
         min_length=9,
@@ -40,4 +43,4 @@ class MovieDetail(Movie):
 
 
 class MovieResult(ListResult):
-    results: list[Movie]
+    results: list[MoviePublic]
