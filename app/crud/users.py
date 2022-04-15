@@ -3,7 +3,6 @@ from databases import Database
 from pydantic import EmailStr
 from fastapi import HTTPException, status
 import logging
-import math
 
 from app.schemas.user import UserCreate, UserInDB
 from .core import BaseCrud
@@ -64,10 +63,8 @@ class UserCrud(BaseCrud):
         if not user_records:
             return []
 
-        total_results = await self.db.fetch_val(
-            query=COUNT_USERS_QUERY
-        )
-        total_pages = math.ceil(total_results / self.PAGE_SIZE)
+        (total_results, total_pages) = \
+            await self._get_total_results_and_pages(query=COUNT_USERS_QUERY)
 
         results = {
             'page': page,
