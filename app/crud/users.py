@@ -1,3 +1,4 @@
+from collections import UserList
 from typing import Optional
 from databases import Database
 from pydantic import EmailStr
@@ -50,53 +51,27 @@ class UserCrud(BaseCrud):
         super().__init__(db)
         self.auth_service = auth_service
 
-    async def get_users(self, page: int = 1) -> UserInDB:
-        (limit, offset) = self._get_limit_offset_from_page(page)
-        user_records = await self.db.fetch_all(
+    async def get_users(self, *, page: int = 1) -> UserList:
+        return await self._get_list_results(
             query=GET_USERS_QUERY,
-            values={
-                "limit": limit,
-                "offset": offset
-            }
+            count_query=COUNT_USERS_QUERY,
+            page=page,
+            ResultClass=UserInDB
         )
-
-        if not user_records:
-            return []
-
-        (total_results, total_pages) = \
-            await self._get_total_results_and_pages(query=COUNT_USERS_QUERY)
-
-        results = {
-            'page': page,
-            'total_results': total_results,
-            'total_pages': total_pages,
-            'results': [UserInDB(**user_record)
-                        for user_record in user_records]
-        }
-
-        return results
 
     async def get_user_by_email(self, *, email: EmailStr) -> UserInDB:
-        user_record = await self.db.fetch_one(
+        return await self._get_single_result(
             query=GET_USER_BY_EMAIL_QUERY,
-            values={"email": email}
+            ResultClass=UserInDB,
+            email=email
         )
-
-        if not user_record:
-            return None
-
-        return UserInDB(**user_record)
 
     async def get_user_by_username(self, *, username: str) -> UserInDB:
-        user_record = await self.db.fetch_one(
+        return await self._get_single_result(
             query=GET_USER_BY_USERNAME_QUERY,
-            values={"username": username}
+            ResultClass=UserInDB,
+            username=username
         )
-
-        if not user_record:
-            return None
-
-        return UserInDB(**user_record)
 
     async def _prepare_new_user(
         self,

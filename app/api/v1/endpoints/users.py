@@ -55,9 +55,9 @@ async def get_users(
     _: UserInDB = Depends(auth.get_current_active_admin_user)
 ) -> UserResult:
     user_crud = UserCrud(db_session)
-    created_users = await user_crud.get_users(page)
+    user_list = await user_crud.get_users(page=page)
 
-    return created_users
+    return user_list
 
 
 @router.get(
