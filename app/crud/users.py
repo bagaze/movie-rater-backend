@@ -23,6 +23,12 @@ GET_USERS_QUERY = """
     LIMIT :limit OFFSET :offset;
 """
 
+GET_USER_BY_ID_QUERY = """
+    SELECT id, username, email, password, salt,
+        is_active, is_superuser, created_at, updated_at
+    FROM users
+    WHERE id = :id;
+"""
 GET_USER_BY_EMAIL_QUERY = """
     SELECT id, username, email, password, salt,
         is_active, is_superuser, created_at, updated_at
@@ -58,6 +64,22 @@ class UserCrud(BaseCrud):
             page=page,
             ResultClass=UserInDB
         )
+
+    async def get_user_by_id(self, *, user_id: int) -> UserInDB:
+        user = await self._get_single_result(
+            query=GET_USER_BY_ID_QUERY,
+            ResultClass=UserInDB,
+            id=user_id
+        )
+
+        if user is None:
+            detail = f"User with id={user_id} does not exist"
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=detail
+            )
+
+        return user
 
     async def get_user_by_email(self, *, email: EmailStr) -> UserInDB:
         return await self._get_single_result(

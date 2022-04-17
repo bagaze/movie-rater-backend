@@ -38,6 +38,34 @@ async def post_user(
 
 
 @router.get(
+    "/me",
+    name="users:get-user-me",
+    include_in_schema=True,
+    response_model=UserPublic,
+)
+async def get_user_me(
+    current_user: UserInDB = Depends(auth.get_current_active_user)
+) -> UserPublic:
+    return current_user
+
+
+@router.get(
+    "/{user_id}",
+    name="users:get-user-id",
+    include_in_schema=True,
+    response_model=UserPublic,
+)
+async def get_user_id(
+    user_id: int,
+    db_session: Database = Depends(db_session)
+) -> UserPublic:
+    user_crud = UserCrud(db_session)
+    user = await user_crud.get_user_by_id(user_id=user_id)
+
+    return user
+
+
+@router.get(
     "/",
     name="users:get-users",
     include_in_schema=False,
@@ -58,15 +86,3 @@ async def get_users(
     user_list = await user_crud.get_users(page=page)
 
     return user_list
-
-
-@router.get(
-    "/me",
-    name="users:get-user-me",
-    include_in_schema=True,
-    response_model=UserPublic,
-)
-async def get_user_me(
-    current_user: UserInDB = Depends(auth.get_current_active_user)
-) -> UserPublic:
-    return current_user

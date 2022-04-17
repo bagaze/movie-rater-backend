@@ -9,6 +9,8 @@ import logging
 import alembic
 from alembic.config import Config
 
+from app.crud.users import UserCrud
+
 logger = logging.getLogger()
 
 
@@ -46,3 +48,9 @@ async def db() -> Database:
 def client(app: FastAPI) -> Generator:
     with TestClient(app) as c:
         yield c
+
+
+# Create user in DB in our tests
+@pytest.fixture
+def user_crud(db: Database) -> UserCrud:
+    return UserCrud(db)

@@ -1,4 +1,3 @@
-from databases import Database
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 import pytest
@@ -12,11 +11,6 @@ from starlette.status import (
 from app.crud.users import UserCrud
 from app.schemas.user import UserCreate, UserInDB, UserPublic
 from app.schemas.token import AccessToken
-
-
-@pytest.fixture
-def user_crud(db: Database) -> UserCrud:
-    return UserCrud(db)
 
 
 class TestUsersAPIRoutes:
@@ -107,6 +101,50 @@ def user_test_login():
         username='jane_doe',
         password='password'
     )
+
+
+@pytest.fixture
+def user_test_api_retrieval():
+    return UserCreate(
+        email='test_api_retrieval@mail.com',
+        username='test_api_retrieval',
+        password='password'
+    )
+
+
+class TestUsersAPIRetrieval:
+
+    async def test_user_get_by_id(
+        self,
+        app: FastAPI,
+        client: TestClient,
+        user_test_api_retrieval: UserCreate,
+        user_crud: UserCrud
+    ):
+        new_user: UserInDB = await user_crud.create_new_user(
+            new_user=user_test_api_retrieval, is_superuser=False
+        )
+
+        res = client.get(
+            app.url_path_for("users:get-user-id", user_id=new_user.id)
+        )
+        assert res.status_code == HTTP_200_OK
+
+        retrieved_user = UserPublic(**res.json())
+        assert retrieved_user.id
+        assert retrieved_user.email == new_user.email
+        assert retrieved_user.username == new_user.username
+
+    def test_user_get_by_id_not_existing(
+        self,
+        app: FastAPI,
+        client: TestClient
+    ):
+        not_existing_id = 1000000
+        res = client.get(
+            app.url_path_for("users:get-user-id", user_id=not_existing_id)
+        )
+        assert res.status_code == HTTP_404_NOT_FOUND
 
 
 class TestUsersAPILogin:
