@@ -5,12 +5,41 @@ from starlette.status import (
     HTTP_404_NOT_FOUND,
     HTTP_201_CREATED,
     HTTP_200_OK,
+    HTTP_204_NO_CONTENT,
     HTTP_401_UNAUTHORIZED
 )
 
 from app.crud.users import UserCrud
 from app.schemas.user import UserCreate, UserInDB, UserPublic
 from app.schemas.token import AccessToken
+
+
+def get_token(app_: FastAPI, client_: TestClient, *, user: UserCreate) -> AccessToken:
+    res = client_.post(
+        app_.url_path_for("tokens:post-token"),
+        data={'username': user.email, 'password': user.password}
+    )
+    assert res.status_code == HTTP_201_CREATED
+
+    return AccessToken(**res.json())
+
+
+async def get_or_create_user(
+    user_crud_: UserCrud, *, user_c: UserCreate, is_superuser: bool = False
+) -> UserPublic:
+    user = await user_crud_.get_user_by_email(email=user_c.email)
+
+    if user is None:
+        new_user = UserCreate(
+            email=user_c.email, username=user_c.username, password=user_c.password
+        )
+        user = await user_crud_.create_new_user(
+            new_user=new_user, is_superuser=is_superuser
+        )
+        assert user.id is not None
+
+    assert user.id is not None
+    return user
 
 
 class TestUsersAPIRoutes:
@@ -156,16 +185,10 @@ class TestUsersAPILogin:
         user_test_login: UserCreate,
         user_crud: UserCrud
     ):
-        await user_crud.create_new_user(new_user=user_test_login, is_superuser=False)
+        created_user = await user_crud.create_new_user(new_user=user_test_login, is_superuser=False)
+        assert created_user is not None
 
-        res = client.post(
-            app.url_path_for("tokens:post-token"),
-            data={'username': user_test_login.email, 'password': user_test_login.password}
-        )
-
-        token = AccessToken(**res.json())
-        assert token.token_type == 'Bearer'
-        assert token.access_token is not None
+        get_token(app, client, user=user_test_login)
 
     def test_user_get_me(
         self,
@@ -215,12 +238,11 @@ class TestUsersAPILogin:
         client: TestClient,
         user_test_login: UserCreate
     ):
-        res = client.post(
-            app.url_path_for("tokens:post-token"),
-            data={'username': user_test_login.email, 'password': user_test_login.password}
+        token = get_token(
+            app,
+            client,
+            user=user_test_login
         )
-        assert res.status_code == HTTP_201_CREATED
-        token = AccessToken(**res.json())
 
         headers = {
             'Authorization': f'{token.token_type} {token.access_token}'
@@ -233,7 +255,7 @@ class TestUsersAPILogin:
 
 
 @pytest.fixture
-def user_test_admin_login():
+def admin_test_login():
     return UserCreate(
         email='admin@mail.com',
         username='admin',
@@ -247,36 +269,28 @@ class TestUsersAdminAPILogin:
         self,
         app: FastAPI,
         client: TestClient,
-        user_test_admin_login: UserCreate,
+        admin_test_login: UserCreate,
         user_crud: UserCrud
     ):
-        await user_crud.create_new_user(new_user=user_test_admin_login, is_superuser=True)
+        await user_crud.create_new_user(new_user=admin_test_login, is_superuser=True)
 
-        res = client.post(
-            app.url_path_for("tokens:post-token"),
-            data={
-                'username': user_test_admin_login.email, 'password': user_test_admin_login.password
-            }
+        get_token(
+            app,
+            client,
+            user=admin_test_login
         )
-
-        token = AccessToken(**res.json())
-        assert token.token_type == 'Bearer'
-        assert token.access_token is not None
 
     def test_admin_get_me(
         self,
         app: FastAPI,
         client: TestClient,
-        user_test_admin_login: UserCreate
+        admin_test_login: UserCreate
     ):
-        res = client.post(
-            app.url_path_for("tokens:post-token"),
-            data={
-                'username': user_test_admin_login.email, 'password': user_test_admin_login.password
-            }
+        token = get_token(
+            app,
+            client,
+            user=admin_test_login
         )
-        assert res.status_code == HTTP_201_CREATED
-        token = AccessToken(**res.json())
 
         headers = {
             'Authorization': f'{token.token_type} {token.access_token}'
@@ -288,23 +302,20 @@ class TestUsersAdminAPILogin:
         assert res.status_code == HTTP_200_OK
 
         user_me = UserPublic(**res.json())
-        assert user_test_admin_login.username == user_me.username
-        assert user_test_admin_login.email == user_me.email
+        assert admin_test_login.username == user_me.username
+        assert admin_test_login.email == user_me.email
 
     def test_admin_access_restricted_endpoints(
         self,
         app: FastAPI,
         client: TestClient,
-        user_test_admin_login: UserCreate
+        admin_test_login: UserCreate
     ):
-        res = client.post(
-            app.url_path_for("tokens:post-token"),
-            data={
-                'username': user_test_admin_login.email, 'password': user_test_admin_login.password
-            }
+        token = get_token(
+            app,
+            client,
+            user=admin_test_login
         )
-        assert res.status_code == HTTP_201_CREATED
-        token = AccessToken(**res.json())
 
         headers = {
             'Authorization': f'{token.token_type} {token.access_token}'
@@ -314,3 +325,194 @@ class TestUsersAdminAPILogin:
             headers=headers
         )
         assert res.status_code == HTTP_200_OK
+
+
+@pytest.fixture
+def user_test_modify():
+    return UserCreate(
+        email='henry.doe@mail.com',
+        username='henry_doe',
+        password='password'
+    )
+
+
+@pytest.fixture
+def user_two_test_modify():
+    return UserCreate(
+        email='jack.doe@mail.com',
+        username='jack_doe',
+        password='password'
+    )
+
+
+@pytest.fixture
+def admin_test_modify():
+    return UserCreate(
+        email='admin_mod@mail.com',
+        username='admin_mod',
+        password='password'
+    )
+
+
+class TestUsersAPIModify:
+
+    async def test_modify_user_without_token(
+        self,
+        app: FastAPI,
+        client: TestClient,
+        user_crud: UserCrud,
+        user_test_modify: UserCreate
+    ):
+        user_1 = await get_or_create_user(
+            user_crud, user_c=user_test_modify, is_superuser=False
+        )
+        res = client.put(
+            app.url_path_for("users:put-user-id", user_id=user_1.id),
+            data={
+                'username': 'mod_username', 'email': 'mod_email@mail.com'
+            }
+        )
+        assert res.status_code == HTTP_401_UNAUTHORIZED
+
+    async def test_modify_user(
+        self,
+        app: FastAPI,
+        client: TestClient,
+        user_crud: UserCrud,
+        user_test_modify: UserCreate
+    ):
+        user_1 = await get_or_create_user(
+            user_crud, user_c=user_test_modify, is_superuser=False
+        )
+        token_user_1 = get_token(app, client, user=user_test_modify)
+
+        headers = {
+            'Authorization': f'{token_user_1.token_type} {token_user_1.access_token}'
+        }
+        res = client.put(
+            app.url_path_for("users:put-user-id", user_id=user_1.id),
+            headers=headers,
+            json={
+                'username': 'mod_username', 'email': 'mod_email@mail.com'
+            }
+        )
+        assert res.status_code == HTTP_200_OK
+        user_mod_1 = UserPublic(**res.json())
+        assert user_mod_1.username == 'mod_username'
+        assert user_mod_1.email == 'mod_email@mail.com'
+        assert user_mod_1.id == user_1.id
+
+    async def test_modify_another_user(
+        self,
+        app: FastAPI,
+        client: TestClient,
+        user_crud: UserCrud,
+        user_test_modify: UserCreate,
+        user_two_test_modify: UserCreate
+    ):
+        await get_or_create_user(
+            user_crud, user_c=user_test_modify, is_superuser=False
+        )
+        user_2 = await get_or_create_user(
+            user_crud, user_c=user_two_test_modify, is_superuser=False
+        )
+        token_user_1 = get_token(app, client, user=user_test_modify)
+
+        headers = {
+            'Authorization': f'{token_user_1.token_type} {token_user_1.access_token}'
+        }
+        res = client.put(
+            app.url_path_for("users:put-user-id", user_id=user_2.id),
+            headers=headers,
+            json={
+                'username': 'mod_username', 'email': 'mod_email@mail.com'
+            }
+        )
+        assert res.status_code == HTTP_401_UNAUTHORIZED
+
+    async def test_modify_users_as_admin(
+        self,
+        app: FastAPI,
+        client: TestClient,
+        user_crud: UserCrud,
+        user_test_modify: UserCreate,
+        admin_test_modify: UserCreate
+    ):
+        await get_or_create_user(
+            user_crud, user_c=admin_test_modify, is_superuser=True
+        )
+        user_1 = await get_or_create_user(
+            user_crud, user_c=user_test_modify, is_superuser=False
+        )
+        token_admin = get_token(app, client, user=admin_test_modify)
+
+        headers = {
+            'Authorization': f'{token_admin.token_type} {token_admin.access_token}'
+        }
+        res = client.put(
+            app.url_path_for("users:put-user-id", user_id=user_1.id),
+            headers=headers,
+            json={
+                'username': 'username_mod_by_admin', 'email': 'email_mod_by_admin@mail.com'
+            }
+        )
+        assert res.status_code == HTTP_200_OK
+
+        user_mod_1 = UserPublic(**res.json())
+        assert user_mod_1.username == 'username_mod_by_admin'
+        assert user_mod_1.email == 'email_mod_by_admin@mail.com'
+
+
+@pytest.fixture
+def user_test_delete():
+    return UserCreate(
+        email='robert.doe@mail.com',
+        username='robert_doe',
+        password='password'
+    )
+
+
+@pytest.fixture
+def admin_test_delete():
+    return UserCreate(
+        email='admin_del@mail.com',
+        username='admin_del',
+        password='password'
+    )
+
+
+class TestDeleteUser:
+
+    async def test_delete_admin(
+        self,
+        app: FastAPI,
+        client: TestClient,
+        user_crud: UserCrud,
+        user_test_delete: UserCreate,
+        admin_test_delete: UserCreate
+    ):
+        user = await get_or_create_user(user_crud, user_c=user_test_delete)
+        admin = await get_or_create_user(user_crud, user_c=admin_test_delete, is_superuser=True)
+
+        admin_token = get_token(app, client, user=admin_test_delete)
+        headers = {
+            'Authorization': f'{admin_token.token_type} {admin_token.access_token}'
+        }
+
+        res = client.delete(
+            app.url_path_for("users:delete-user-id", user_id=user.id),
+            headers=headers
+        )
+        assert res.status_code == HTTP_204_NO_CONTENT
+
+        res = client.get(
+            app.url_path_for("users:get-user-id", user_id=user.id),
+            headers=headers
+        )
+        assert res.status_code == HTTP_404_NOT_FOUND
+
+        res = client.delete(
+            app.url_path_for("users:delete-user-id", user_id=admin.id),
+            headers=headers
+        )
+        assert res.status_code == HTTP_401_UNAUTHORIZED

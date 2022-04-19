@@ -5,7 +5,7 @@ from pydantic import EmailStr
 from fastapi import HTTPException, status
 import logging
 
-from app.schemas.user import UserCreate, UserInDB
+from app.schemas.user import UserCreate, UserInDB, UserUpdate
 from .core import BaseCrud
 from app.services import auth_service
 
@@ -29,6 +29,7 @@ GET_USER_BY_ID_QUERY = """
     FROM users
     WHERE id = :id;
 """
+
 GET_USER_BY_EMAIL_QUERY = """
     SELECT id, username, email, password, salt,
         is_active, is_superuser, created_at, updated_at
@@ -48,6 +49,19 @@ CREATE_NEW_USER_QUERY = """
     VALUES (:username, :email, :password, :salt, :is_superuser)
     RETURNING id, username, email, password, salt,
         is_active, is_superuser, created_at, updated_at;
+"""
+
+UPDATE_USER_QUERY = """
+    UPDATE users
+    SET username = :username, email = :email
+    WHERE id = :id
+    RETURNING id, username, email, password, salt,
+        is_active, is_superuser, created_at, updated_at;
+"""
+
+DELETE_USER_QUERY = """
+    DELETE FROM users
+    WHERE id = :id;
 """
 
 
@@ -160,3 +174,36 @@ class UserCrud(BaseCrud):
             return None
 
         return user
+
+    async def update_user(
+        self, *, user_id: int, user_to_update: UserUpdate
+    ) -> UserInDB:
+        updated_user = await self.db.fetch_one(
+            query=UPDATE_USER_QUERY,
+            values={
+                **user_to_update.dict(),
+                'id': user_id
+            }
+        )
+        logger.debug(f'Updated user is {updated_user}')
+
+        if updated_user is None:
+            detail = f'User with id={user_id} does not exist'
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=detail
+            )
+
+        return UserInDB(**updated_user)
+
+    async def delete_user(
+        self, *, user_id: int
+    ) -> None:
+        await self.db.fetch_one(
+            query=DELETE_USER_QUERY,
+            values={
+                'id': user_id
+            }
+        )
+
+        return None
