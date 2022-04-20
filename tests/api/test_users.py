@@ -13,15 +13,7 @@ from app.crud.users import UserCrud
 from app.schemas.user import UserCreate, UserInDB, UserPublic
 from app.schemas.token import AccessToken
 
-
-def get_token(app_: FastAPI, client_: TestClient, *, user: UserCreate) -> AccessToken:
-    res = client_.post(
-        app_.url_path_for("tokens:post-token"),
-        data={'username': user.email, 'password': user.password}
-    )
-    assert res.status_code == HTTP_201_CREATED
-
-    return AccessToken(**res.json())
+from tests.api.core import get_token
 
 
 async def get_or_create_user(

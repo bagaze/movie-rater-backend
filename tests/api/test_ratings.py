@@ -10,9 +10,10 @@ from starlette.status import (
 )
 
 from app.crud.users import UserCrud
-from app.schemas.token import AccessToken
 from app.schemas.user import UserCreate
 from app.schemas.rating import RatingCreatePublic, RatingPublic, RatingResult
+
+from tests.api.core import get_token
 
 
 class TestRatingsAPIRoutes:
@@ -87,12 +88,7 @@ class TestRatingsAPI:
     ):
         new_user = await user_crud.create_new_user(new_user=user_test_rating, is_superuser=False)
 
-        res = client.post(
-            app.url_path_for("tokens:post-token"),
-            data={'username': user_test_rating.email, 'password': user_test_rating.password}
-        )
-
-        token = AccessToken(**res.json())
+        token = get_token(app, client, user=user_test_rating)
         headers = {
             'Authorization': f'{token.token_type} {token.access_token}'
         }
@@ -119,12 +115,7 @@ class TestRatingsAPI:
         user_test_rating: UserCreate,
         test_rating: RatingCreatePublic
     ):
-        res = client.post(
-            app.url_path_for("tokens:post-token"),
-            data={'username': user_test_rating.email, 'password': user_test_rating.password}
-        )
-
-        token = AccessToken(**res.json())
+        token = get_token(app, client, user=user_test_rating)
         headers = {
             'Authorization': f'{token.token_type} {token.access_token}'
         }
@@ -143,12 +134,7 @@ class TestRatingsAPI:
         user_test_rating: UserCreate,
         test_rating_to_update: RatingCreatePublic
     ):
-        res = client.post(
-            app.url_path_for("tokens:post-token"),
-            data={'username': user_test_rating.email, 'password': user_test_rating.password}
-        )
-
-        token = AccessToken(**res.json())
+        token = get_token(app, client, user=user_test_rating)
         headers = {
             'Authorization': f'{token.token_type} {token.access_token}'
         }
@@ -181,12 +167,7 @@ class TestRatingsAPI:
         user_test_rating: UserCreate,
         test_rating_to_update: RatingCreatePublic
     ):
-        res = client.post(
-            app.url_path_for("tokens:post-token"),
-            data={'username': user_test_rating.email, 'password': user_test_rating.password}
-        )
-
-        token = AccessToken(**res.json())
+        token = get_token(app, client, user=user_test_rating)
         headers = {
             'Authorization': f'{token.token_type} {token.access_token}'
         }
@@ -205,12 +186,7 @@ class TestRatingsAPI:
         user_test_rating: UserCreate,
         test_rating_to_get: RatingCreatePublic
     ):
-        res = client.post(
-            app.url_path_for("tokens:post-token"),
-            data={'username': user_test_rating.email, 'password': user_test_rating.password}
-        )
-
-        token = AccessToken(**res.json())
+        token = get_token(app, client, user=user_test_rating)
         headers = {
             'Authorization': f'{token.token_type} {token.access_token}'
         }
@@ -241,12 +217,7 @@ class TestRatingsAPI:
         client: TestClient,
         user_test_rating: UserCreate,
     ):
-        res = client.post(
-            app.url_path_for("tokens:post-token"),
-            data={'username': user_test_rating.email, 'password': user_test_rating.password}
-        )
-
-        token = AccessToken(**res.json())
+        token = get_token(app, client, user=user_test_rating)
         headers = {
             'Authorization': f'{token.token_type} {token.access_token}'
         }
@@ -262,12 +233,7 @@ class TestRatingsAPI:
         client: TestClient,
         user_test_rating: UserCreate,
     ):
-        res = client.post(
-            app.url_path_for("tokens:post-token"),
-            data={'username': user_test_rating.email, 'password': user_test_rating.password}
-        )
-
-        token = AccessToken(**res.json())
+        token = get_token(app, client, user=user_test_rating)
         headers = {
             'Authorization': f'{token.token_type} {token.access_token}'
         }
@@ -288,12 +254,7 @@ class TestRatingsAPI:
         client: TestClient,
         user_test_rating: UserCreate,
     ):
-        res = client.post(
-            app.url_path_for("tokens:post-token"),
-            data={'username': user_test_rating.email, 'password': user_test_rating.password}
-        )
-
-        token = AccessToken(**res.json())
+        token = get_token(app, client, user=user_test_rating)
         headers = {
             'Authorization': f'{token.token_type} {token.access_token}'
         }
@@ -317,12 +278,7 @@ class TestRatingsAPI:
         client: TestClient,
         user_test_rating: UserCreate
     ):
-        res = client.post(
-            app.url_path_for("tokens:post-token"),
-            data={'username': user_test_rating.email, 'password': user_test_rating.password}
-        )
-
-        token = AccessToken(**res.json())
+        token = get_token(app, client, user=user_test_rating)
         headers = {
             'Authorization': f'{token.token_type} {token.access_token}'
         }

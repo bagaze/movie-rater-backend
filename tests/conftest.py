@@ -4,14 +4,10 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from databases import Database
-import logging
-
 import alembic
 from alembic.config import Config
 
 from app.crud.users import UserCrud
-
-logger = logging.getLogger()
 
 
 # Apply migrations at beginning and end of testing session
