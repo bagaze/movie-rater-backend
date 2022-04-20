@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status as http_status, HTTPException
 from databases import Database
 import aiohttp
 
@@ -23,13 +23,18 @@ async def get_movie(
     client_session: aiohttp.ClientSession = Depends(client_session),
     db_session: Database = Depends(db_session)
 ) -> movie.MovieDetailPublic:
-    (_, res) = await tmdb_api.fetch_tmdb_api(
+    (status, res) = await tmdb_api.fetch_tmdb_api(
         endpoint=f'/movie/{movie_id}',
         params={
             'append_to_response': 'credits'
         },
         client_session=client_session
     )
+    if status != http_status.HTTP_200_OK:
+        raise HTTPException(
+            status,
+            detail=res['status_message']
+        )
 
     rating_crud = RatingCrud(db_session)
     avg_rating = await rating_crud.get_avg_rating_per_movie(movie_id=movie_id)
@@ -54,7 +59,7 @@ async def get_movies(
     page: int | None = 1,
     client_session: aiohttp.ClientSession = Depends(client_session)
 ) -> movie.MovieResult:
-    (_, res) = await tmdb_api.fetch_tmdb_api(
+    (status, res) = await tmdb_api.fetch_tmdb_api(
         endpoint='/search/movie',
         client_session=client_session,
         params={
@@ -62,4 +67,10 @@ async def get_movies(
             'page': page
         }
     )
+    if status != http_status.HTTP_200_OK:
+        raise HTTPException(
+            status,
+            detail=res['status_message']
+        )
+
     return res
