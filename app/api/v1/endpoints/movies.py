@@ -1,9 +1,12 @@
 from fastapi import APIRouter, Depends
+from databases import Database
 import aiohttp
 
 from app.proxy import tmdb_api
 from app.proxy.deps import client_session
 from app.schemas import movie
+from app.crud.ratings import RatingCrud
+from app.db.deps import db_session
 
 router = APIRouter()
 
@@ -17,7 +20,8 @@ router = APIRouter()
 async def get_movie(
     *,
     movie_id: int,
-    client_session: aiohttp.ClientSession = Depends(client_session)
+    client_session: aiohttp.ClientSession = Depends(client_session),
+    db_session: Database = Depends(db_session)
 ) -> movie.MovieDetailPublic:
     (_, res) = await tmdb_api.fetch_tmdb_api(
         endpoint=f'/movie/{movie_id}',
@@ -26,7 +30,10 @@ async def get_movie(
         },
         client_session=client_session
     )
-    return res
+
+    rating_crud = RatingCrud(db_session)
+    avg_rating = await rating_crud.get_avg_rating_per_movie(movie_id=movie_id)
+    return {**res, 'avg_rating': avg_rating}
 
 
 @router.get(

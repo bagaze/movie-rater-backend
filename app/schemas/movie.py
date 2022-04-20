@@ -1,5 +1,5 @@
 from datetime import date
-from pydantic import constr, root_validator, validator, Extra
+from pydantic import constr, confloat, root_validator, validator, Extra
 
 from app.schemas.core import CoreModel, IDModelMixin, ListResult
 
@@ -29,6 +29,7 @@ class MovieDetailPublic(MoviePublic):
         max_length=9
     )
     directors: list[str] | None
+    avg_rating: confloat(ge=0.0, le=10.0) | None
 
     @root_validator(pre=True)
     def add_directors(cls, values: dict) -> dict:

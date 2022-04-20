@@ -38,6 +38,12 @@ GET_RATING_BY_USER_MOVIE_QUERY = """
     WHERE user_id = :user_id AND movie_id = :movie_id;
 """
 
+GET_AVG_RATING_BY_MOVIE_QUERY = """
+    SELECT AVG(grade)::NUMERIC(2,1)
+    FROM ratings
+    WHERE movie_id = :movie_id;
+"""
+
 GET_RATING_BY_ID = """
     SELECT id, movie_id, user_id, grade,
         created_at, updated_at
@@ -122,6 +128,21 @@ class RatingCrud(BaseCrud):
             user_id=current_user.id,
             movie_id=movie_id
         )
+
+    async def get_avg_rating_per_movie(
+        self,
+        *,
+        movie_id: int
+    ) -> float | None:
+        res = await self.db.fetch_one(
+            query=GET_AVG_RATING_BY_MOVIE_QUERY,
+            values={'movie_id': movie_id}
+        )
+
+        if not res[0]:
+            return None
+
+        return float(res[0])
 
     async def create_new_rating(self, *, new_rating: RatingCreate) -> RatingInDB:
         try:
