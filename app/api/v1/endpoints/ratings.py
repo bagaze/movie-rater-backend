@@ -55,6 +55,25 @@ async def get_rating_id(
     return rating
 
 
+@router.get(
+    "/{movie_id}/me",
+    name="ratings:get-rating-movie-id-me",
+    include_in_schema=True,
+    response_model=RatingPublic,
+)
+async def get_rating_movie_id_me(
+    movie_id: int,
+    current_user: UserInDB = Depends(auth.get_current_active_user),
+    db_session: Database = Depends(db_session)
+) -> RatingPublic:
+    rating_crud = RatingCrud(db_session)
+    rating = await rating_crud.get_rating_per_user_movie(
+        current_user=current_user, movie_id=movie_id
+    )
+
+    return rating
+
+
 @router.post(
     "/",
     name="ratings:post-rating",

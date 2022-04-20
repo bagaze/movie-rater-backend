@@ -331,3 +331,26 @@ class TestRatingsAPI:
         assert ratings.total_results == 2
         assert ratings.total_pages == 1
         assert ratings.results
+
+    def test_get_rating_movie_id_me(
+        self,
+        app: FastAPI,
+        client: TestClient,
+        user_test_rating: UserCreate
+    ):
+        token = get_token(app, client, user=user_test_rating)
+        headers = {
+            'Authorization': f'{token.token_type} {token.access_token}'
+        }
+
+        res = client.get(
+            app.url_path_for('ratings:get-rating-movie-id-me', movie_id=2),
+            headers=headers
+        )
+        assert res.status_code == HTTP_200_OK
+
+        res = client.get(
+            app.url_path_for('ratings:get-rating-movie-id-me', movie_id=10000),
+            headers=headers
+        )
+        assert res.status_code == HTTP_404_NOT_FOUND

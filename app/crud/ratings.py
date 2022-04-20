@@ -145,12 +145,20 @@ class RatingCrud(BaseCrud):
         current_user: UserInDB,
         movie_id: int
     ) -> RatingInDB:
-        return await self._get_single_result(
+        rating = await self._get_single_result(
             query=GET_RATING_BY_USER_MOVIE_QUERY,
             ResultClass=RatingInDB,
             user_id=current_user.id,
             movie_id=movie_id
         )
+        if rating is None:
+            detail = f'Rating for movie id={movie_id} does not exist'
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=detail
+            )
+
+        return rating
 
     async def get_avg_rating_per_movie(
         self,
