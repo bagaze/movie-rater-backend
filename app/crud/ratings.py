@@ -16,10 +16,24 @@ COUNT_RATINGS_QUERY = """
     FROM ratings;
 """
 
+COUNT_RATINGS_BY_MOVIE_QUERY = """
+    SELECT COUNT(*)
+    FROM ratings
+    WHERE movie_id = :movie_id;
+"""
+
 GET_RATINGS_QUERY = """
     SELECT id, movie_id, user_id, grade,
         created_at, updated_at
     FROM ratings
+    LIMIT :limit OFFSET :offset;
+"""
+
+GET_RATINGS_BY_MOVIE_QUERY = """
+    SELECT id, movie_id, user_id, grade,
+        created_at, updated_at
+    FROM ratings
+    WHERE movie_id = :movie_id
     LIMIT :limit OFFSET :offset;
 """
 
@@ -78,11 +92,20 @@ class RatingCrud(BaseCrud):
         super().__init__(db)
         self.auth_service = auth_service
 
-    async def get_ratings(self, *, page: int = 1) -> RatingResult:
+    async def get_ratings(self, *, page: int = 1, movie_id: int | None = None) -> RatingResult:
+        if movie_id is None:
+            return await self._get_list_results(
+                query=GET_RATINGS_QUERY,
+                count_query=COUNT_RATINGS_QUERY,
+                page=page,
+                ResultClass=RatingInDB
+            )
+
         return await self._get_list_results(
-            query=GET_RATINGS_QUERY,
-            count_query=COUNT_RATINGS_QUERY,
+            query=GET_RATINGS_BY_MOVIE_QUERY,
+            count_query=COUNT_RATINGS_BY_MOVIE_QUERY,
             page=page,
+            movie_id=movie_id,
             ResultClass=RatingInDB
         )
 

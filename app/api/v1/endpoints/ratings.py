@@ -30,10 +30,11 @@ router = APIRouter()
 )
 async def get_ratings(
     page: int = 1,
+    movie_id: int | None = None,
     db_session: Database = Depends(db_session)
 ) -> RatingResult:
     rating_crud = RatingCrud(db_session)
-    ratings = await rating_crud.get_ratings(page=page)
+    ratings = await rating_crud.get_ratings(page=page, movie_id=movie_id)
 
     return ratings
 

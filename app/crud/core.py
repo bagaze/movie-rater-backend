@@ -14,9 +14,14 @@ class BaseCrud:
     def _get_limit_offset_from_page(self, page: int) -> tuple[int, int]:
         return (self.PAGE_SIZE, self.PAGE_SIZE * (page - 1))
 
-    async def _get_total_results_and_pages(self, *, count_query: str) -> Tuple[int, int]:
+    async def _get_total_results_and_pages(
+        self, *, count_query: str, **query_params
+    ) -> Tuple[int, int]:
         total_results = await self.db.fetch_val(
-            query=count_query
+            query=count_query,
+            values={
+                **query_params
+            }
         )
         total_pages = math.ceil(total_results / self.PAGE_SIZE)
 
@@ -42,7 +47,10 @@ class BaseCrud:
         )
 
         (total_results, total_pages) = \
-            await self._get_total_results_and_pages(count_query=count_query)
+            await self._get_total_results_and_pages(
+                count_query=count_query,
+                **query_params
+        )
 
         results = {
             'page': page,
