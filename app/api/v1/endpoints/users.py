@@ -79,8 +79,7 @@ async def get_user_id(
 )
 async def get_users(
     page: int = 1,
-    db_session: Database = Depends(db_session),
-    _: UserInDB = Depends(auth.get_current_active_admin_user)
+    db_session: Database = Depends(db_session)
 ) -> UserResult:
     user_crud = UserCrud(db_session)
     user_list = await user_crud.get_users(page=page)

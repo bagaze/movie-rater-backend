@@ -232,27 +232,6 @@ class TestUsersAPILogin:
         )
         assert res.status_code == HTTP_401_UNAUTHORIZED
 
-    def test_user_access_prevention(
-        self,
-        app: FastAPI,
-        client: TestClient,
-        user_test_login: UserCreate
-    ):
-        token = get_token(
-            app,
-            client,
-            user=user_test_login
-        )
-
-        headers = {
-            'Authorization': f'{token.token_type} {token.access_token}'
-        }
-        res = client.get(
-            app.url_path_for("users:get-users"),
-            headers=headers
-        )
-        assert res.status_code == HTTP_401_UNAUTHORIZED
-
 
 @pytest.fixture
 def admin_test_login():
