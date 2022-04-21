@@ -26,6 +26,7 @@ GET_RATINGS_QUERY = """
     SELECT id, movie_id, user_id, grade,
         created_at, updated_at
     FROM ratings
+    ORDER BY created_at DESC
     LIMIT :limit OFFSET :offset;
 """
 
@@ -34,6 +35,7 @@ GET_RATINGS_BY_MOVIE_QUERY = """
         created_at, updated_at
     FROM ratings
     WHERE movie_id = :movie_id
+    ORDER BY created_at DESC
     LIMIT :limit OFFSET :offset;
 """
 
@@ -42,6 +44,7 @@ GET_RATINGS_BY_USER_QUERY = """
         created_at, updated_at
     FROM ratings
     WHERE user_id = :user_id
+    ORDER BY created_at DESC
     LIMIT :limit OFFSET :offset;
 """
 

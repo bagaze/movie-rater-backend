@@ -20,6 +20,7 @@ GET_USERS_QUERY = """
     SELECT id, username, email, password, salt,
         is_active, is_superuser, created_at, updated_at
     FROM users
+    ORDER BY created_at DESC
     LIMIT :limit OFFSET :offset;
 """
 
