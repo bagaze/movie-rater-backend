@@ -52,7 +52,7 @@ class MovieDetailPublic(MoviePublic):
         if fr_release_dates is not None:
             theatrical_release_date = next((release_date['release_date']
                 for release_date in fr_release_dates['release_dates']
-                    if release_date['type'] == 3))
+                    if release_date['type'] == 3), None)
 
         return {**values, 'theatrical_release_date': theatrical_release_date}
 
