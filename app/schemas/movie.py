@@ -25,9 +25,9 @@ class MoviePublic(IDModelMixin, MovieBase):
 
 class MovieDetailPublic(MoviePublic):
     imdb_id: constr(
-        regex='^tt[0-9]{7}',  # noqa: F722
+        regex='^tt[0-9]{7,8}',  # noqa: F722
         min_length=9,
-        max_length=9
+        max_length=10
     )
     directors: list[str] | None
     avg_rating: confloat(ge=0.0, le=10.0) | None
