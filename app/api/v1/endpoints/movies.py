@@ -26,7 +26,7 @@ async def get_movie(
     (status, res) = await tmdb_api.fetch_tmdb_api(
         endpoint=f'/movie/{movie_id}',
         params={
-            'append_to_response': 'credits'
+            'append_to_response': 'credits,release_dates'
         },
         client_session=client_session
     )
