@@ -9,6 +9,7 @@ class MovieBase(CoreModel):
     title: str
     vote_average: float
     vote_count: int
+    poster_path: str | None
     release_date: date | None
 
     @validator('release_date', pre=True)
