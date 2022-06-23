@@ -147,7 +147,7 @@ class TestRatingsAPI:
         assert res.status_code == HTTP_201_CREATED
         created_rating = RatingPublic(**res.json())
 
-        new_grade = 8
+        new_grade = 10
         res = client.put(
             app.url_path_for("ratings:put-rating-id", rating_id=created_rating.id),
             headers=headers,

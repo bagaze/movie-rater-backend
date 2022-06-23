@@ -9,7 +9,7 @@ from app.schemas import token, user
 def get_token(app_: FastAPI, client_: TestClient, *, user: user.UserCreate) -> token.AccessToken:
     res = client_.post(
         app_.url_path_for("tokens:post-token"),
-        data={'username': user.email, 'password': user.password}
+        data={'username': user.username, 'password': user.password}
     )
     assert res.status_code == HTTP_201_CREATED
 

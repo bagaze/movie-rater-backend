@@ -190,7 +190,7 @@ class TestUsersAPILogin:
     ):
         res = client.post(
             app.url_path_for("tokens:post-token"),
-            data={'username': user_test_login.email, 'password': user_test_login.password}
+            data={'username': user_test_login.username, 'password': user_test_login.password}
         )
         assert res.status_code == HTTP_201_CREATED
         token = AccessToken(**res.json())
