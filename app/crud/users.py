@@ -160,11 +160,11 @@ class UserCrud(BaseCrud):
     async def authenticate_user(
         self,
         *,
-        email: EmailStr,
+        username: str,
         password: str
     ) -> Optional[UserInDB]:
-        user = await self.get_user_by_email(email=email)
-        logger.debug(f'get_user_by_email: user is {user}')
+        user = await self.get_user_by_username(username=username)
+        logger.debug(f'get_user_by_username: user is {user}')
         if not user:
             return None
         if not self.auth_service.verify_password(

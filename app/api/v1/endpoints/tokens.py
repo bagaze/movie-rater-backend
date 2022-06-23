@@ -34,14 +34,14 @@ async def post_token(
 ) -> AccessToken:
     user_crud = UserCrud(db_session)
     authenticated_user = await user_crud.authenticate_user(
-        email=form_data.username,
+        username=form_data.username,
         password=form_data.password
     )
     logger.debug(f'authenticated user is: {authenticated_user}')
     if not authenticated_user:
         raise HTTPException(
             status_code=HTTP_401_UNAUTHORIZED,
-            detail='Authentication was unsuccessful',
+            detail='Authentication was unsuccessful. Please verify username and password',
             headers={"WWW-Authenticate": "Bearer"}
         )
 
