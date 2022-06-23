@@ -3,6 +3,8 @@ An API application allowing to retrieve film information (thanks to [The Movie D
 
 Built using [Python FastAPI](https://fastapi.tiangolo.com)
 
+Deployed on Heroku at: [https://bagaze-movie-rater-backend.herokuapp.com/](https://bagaze-movie-rater-backend.herokuapp.com/)
+
 ## Prerequisites
 
 [Docker](https://www.docker.com/get-started)
