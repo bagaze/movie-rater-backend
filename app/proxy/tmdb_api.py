@@ -2,8 +2,7 @@ import aiohttp
 from app.core.config import settings
 
 DEFAULT_PARAMS = {
-    'region': 'FR',
-    'language': 'FR-fr',
+    'language': 'fr-FR',
     'with_release_type': '3'
 }
 

@@ -28,7 +28,7 @@ class MovieDetailPublic(MoviePublic):
         regex='^tt[0-9]{7,8}',  # noqa: F722
         min_length=9,
         max_length=10
-    )
+    ) | None
     directors: list[str] | None
     avg_rating: confloat(ge=0.0, le=10.0) | None
     theatrical_release_date: datetime | None

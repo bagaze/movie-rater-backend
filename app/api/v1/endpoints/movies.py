@@ -63,6 +63,7 @@ async def get_movies(
         endpoint='/search/movie',
         client_session=client_session,
         params={
+            'region': 'FR',
             'query': query,
             'page': page
         }

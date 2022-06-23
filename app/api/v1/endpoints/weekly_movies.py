@@ -32,6 +32,7 @@ async def get_weekly_movies(
         endpoint='/discover/movie',
         client_session=client_session,
         params={
+            'region': 'FR',
             'release_date.gte': str(release_date_gte),
             'release_date.lte': str(release_date_lte),
             'page': page
