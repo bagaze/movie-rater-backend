@@ -56,7 +56,7 @@ GET_RATING_BY_USER_MOVIE_QUERY = """
 """
 
 GET_AVG_RATING_BY_MOVIE_QUERY = """
-    SELECT AVG(grade)::NUMERIC(2,1)
+    SELECT AVG(grade)::NUMERIC(3,1)
     FROM ratings
     WHERE movie_id = :movie_id;
 """
