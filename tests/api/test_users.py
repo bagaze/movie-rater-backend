@@ -90,7 +90,9 @@ class TestUsersAPICreation:
         "attr, value, status_code",
         (
             ("email", "john.doe@mail.com", 400),
+            ("email", "John.Doe@mail.com", 400),
             ("username", "john_doe", 400),
+            ("username", "John_Doe", 400),
             ("email", "invalid_email@one@two.io", 422),
             ("password", "mini", 422),
             ("username", "john_doe@#$%^<>", 422),

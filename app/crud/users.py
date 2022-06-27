@@ -35,26 +35,26 @@ GET_USER_BY_EMAIL_QUERY = """
     SELECT id, username, email, password, salt,
         is_active, is_superuser, created_at, updated_at
     FROM users
-    WHERE email = :email;
+    WHERE email = LOWER(:email);
 """
 
 GET_USER_BY_USERNAME_QUERY = """
     SELECT id, username, email, password, salt,
         is_active, is_superuser, created_at, updated_at
     FROM users
-    WHERE username = :username;
+    WHERE username = LOWER(:username);
 """
 
 CREATE_NEW_USER_QUERY = """
     INSERT INTO users (username, email, password, salt, is_superuser)
-    VALUES (:username, :email, :password, :salt, :is_superuser)
+    VALUES (LOWER(:username), LOWER(:email), :password, :salt, :is_superuser)
     RETURNING id, username, email, password, salt,
         is_active, is_superuser, created_at, updated_at;
 """
 
 UPDATE_USER_QUERY = """
     UPDATE users
-    SET username = :username, email = :email
+    SET username = LOWER(:username), email = LOWER(:email)
     WHERE id = :id
     RETURNING id, username, email, password, salt,
         is_active, is_superuser, created_at, updated_at;
