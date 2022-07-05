@@ -1,6 +1,6 @@
 services:
-  movieraterbackend:
-    image: movieraterbackend
+  movieraterbackend-debug:
+    image: movieraterbackend-debug
     build:
       context: ./
       dockerfile: ./Dockerfile
@@ -10,7 +10,7 @@ services:
       - ./app/:/app/app
       - ./alembic/:/app/alembic
       - ./tests/:/app/tests
-    command: ["sh", "-c", "pip install debugpy -t /tmp && python /tmp/debugpy --wait-for-client --listen 0.0.0.0:5678 -m uvicorn app.app:app --reload --workers 1 --host 0.0.0.0 --port 9090"]
+    command: ["sh", "-c", "pip install debugpy -t /tmp && python /tmp/debugpy --listen 0.0.0.0:5678 -m uvicorn app.main:app --reload --workers 1 --host 0.0.0.0 --port 9090"]
     ports:
       - 9090:9090
       - 5678:5678
